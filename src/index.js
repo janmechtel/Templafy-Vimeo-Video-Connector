@@ -36,25 +36,16 @@ app.get('/content/', async function(req, res) {
         res.send(response)
     }
 
-    const domain = req.query.search.indexOf(".com") > 0 ? req.query.search : `${req.query.search}.com`
-
-    try {
-        const request = await fetch(`https://logo.clearbit.com/${domain}`);
-        if (request.status === 200) {
-            response.content.push({
-                id: domain,
-                mimeType: "image/png",
-                previewUrl: `https://logo.clearbit.com/${domain}`,
-                name: `${domain} - from clearbit`,
-                tags: domain
-            })
-            response.contentCount = 1;
-        }
-
-    } catch (error) {
-        console.log(error);
-    }
-
+    const searchQuery = req.query.search;
+    response.content.push({
+        id: searchQuery,
+        mimeType: "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+        previewUrl: `https://i.vimeocdn.com/video/1410789380-ce6e905b04fe6a6aabc9bf2a136bac550b869af6a336fe5f10d9818256992742-d?mw=1200&mh=675&q=70`,
+        name: `${searchQuery}`,
+        tags: searchQuery
+    })
+    response.contentCount = 1;
+    
     res.send(response);
 });
 
