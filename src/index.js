@@ -19,6 +19,13 @@ app.get('/content/:domain/download-url', function(req, res) {
 });
 
 app.get('/content/', async function(req, res) {
+    
+    if (req.query.contentType != "slideElement") {
+        res.statusCode = 406;
+        res.send("Content type not supported (only 'slideElement' is supported).");
+        return;
+    }
+
     const response = {
         contentCount: 0,
         offset: 0,
