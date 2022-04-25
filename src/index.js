@@ -3,6 +3,13 @@ import path from 'path';
 import JsZip from 'jszip';
 import fs from 'fs'
 import { resolve } from 'path';
+
+import {Vimeo} from 'vimeo'; 
+
+const clientId = process.env.VIMEO_CLIENT_ID;
+const clientSecret = process.env.VIMEO_CLIENT_SECRET;
+const accessToken = process.env.VIMEO_ACCESS_TOKEN;
+
 const __dirname = path.resolve();
 
 var app = express();
@@ -68,33 +75,66 @@ app.get('/content/:contentId/download-url', function (req, res) {
 
 app.get('/content/', async function (req, res) {
 
-    if (req.query.contentType != "slideElement") {
-        res.statusCode = 406;
-        res.send("Content type not supported (only 'slideElement' is supported).");
-        return;
-    }
-
     const response = {
         contentCount: 0,
         offset: 0,
         content: []
     }
 
-    if (req.query.pageNumber > 1) {
-        res.send(response)
+    if (req.query.contentType != "slideElement") {
+        res.statusCode = 406;
+        res.send("Content type not supported (only 'slideElement' is supported).");
+        return;
     }
 
-    const searchQuery = req.query.search;
-    response.content.push({
-        id: searchQuery,
-        mimeType: "application/vnd.openxmlformats-officedocument.presentationml.presentation",
-        previewUrl: `https://i.vimeocdn.com/video/1410789380-ce6e905b04fe6a6aabc9bf2a136bac550b869af6a336fe5f10d9818256992742-d?mw=1200&mh=675&q=70`,
-        name: `${searchQuery}`,
-        tags: searchQuery
-    })
-    response.contentCount = 1;
 
-    res.send(response);
+    if (req.query.pageNumber > 1) {
+        res.send(response);
+        return;
+    }
+
+    try {
+        const query = req.query.search;
+        
+        let client = new Vimeo(clientId, clientSecret, accessToken);
+        
+        client.request({
+            method: 'GET',
+            path: '/videos',
+            query: {
+                query: query
+            }
+
+        }, function (error, body, status_code, headers) {
+            if (error) {
+                console.log(error);
+            }
+            
+            // console.log(body);
+            if (status_code === 200) {
+                //iterate through the videos in body.data
+                body.data.forEach(function(video) {
+                    console.log(video);
+                    response.content.push({
+                        id: video.player_embed_url,
+                        mimeType: "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+                        previewUrl: video.pictures.base_link, 
+                        // `https://i.vimeocdn.com/video/1410789380-ce6e905b04fe6a6aabc9bf2a136bac550b869af6a336fe5f10d9818256992742-d?mw=1200&mh=675&q=70`,
+                        name: video.name,
+                        tags: "" // video.tags
+                    })
+                    response.contentCount = response.contentCount+1;
+                });
+            }
+            // response.body = body;
+            res.send(response);            
+        })
+
+    } catch (error) {
+        console.log(error);
+        res.send(response)
+    }
+    
 });
 
 app.get('/', function (req, res) {
