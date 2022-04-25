@@ -1,11 +1,13 @@
 import express from 'express';
-import fetch from 'node-fetch';
+import fs from 'fs';
+import path from 'path';
+const __dirname = path.resolve();
 
 var app = express();
 
 var PORT = process.env.PORT || 3000;
 
-app.post('/oauth/token', function(req, res) {
+app.post('/oauth/token', function (req, res) {
     const response = {
         access_token: "no-auth"
     }
@@ -13,13 +15,27 @@ app.post('/oauth/token', function(req, res) {
     res.send(response);
 });
 
-app.get('/content/:domain/download-url', function(req, res) {
-    const url = { downloadUrl: `https://logo.clearbit.com/${req.params.domain}?size=800` };
+app.get('/download', function (req, res) {
+    res.download(__dirname+'/asets/Video.pptx', function(err) {
+        if(err) {
+            console.log(err);
+        }
+    })
+    
+    // var file = fs.readFileSync(__dirname + '/assets/Video.pptx', 'binary');
+
+    // res.setHeader('Content-Length', file.length);
+    // res.write(file, 'binary');
+    // res.end();
+});
+
+app.get('/content/:contentId/download-url', function (req, res) {
+    const url = { downloadUrl: req.protocol + '://' + req.get('host') + `/download` };
     res.send(url);
 });
 
-app.get('/content/', async function(req, res) {
-    
+app.get('/content/', async function (req, res) {
+
     if (req.query.contentType != "slideElement") {
         res.statusCode = 406;
         res.send("Content type not supported (only 'slideElement' is supported).");
@@ -45,14 +61,14 @@ app.get('/content/', async function(req, res) {
         tags: searchQuery
     })
     response.contentCount = 1;
-    
+
     res.send(response);
 });
 
-app.get('/', function(req, res) {
+app.get('/', function (req, res) {
     res.sendStatus(200);
 });
 
-app.listen(PORT, function() {
+app.listen(PORT, function () {
     console.log('Server is running on PORT:', PORT);
 });
