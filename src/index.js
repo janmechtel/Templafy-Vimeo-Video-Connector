@@ -70,8 +70,14 @@ app.get('/download/:videoUrl', function (req, res) {
 });
 
 app.get('/content/:videoUrl/download-url', function (req, res) {
-    const url = { downloadUrl: req.protocol + '://' + req.get('host') + `/download/${encodeURIComponent(req.params.videoUrl)}` };
-    res.send(url);
+    try {
+        console.log("download url");
+        console.log(req.params.videoUrl);
+        const url = { downloadUrl: req.protocol + '://' + req.get('host') + `/download/${encodeURIComponent(req.params.videoUrl)}` };
+        res.send(url);
+    } catch (error) {
+        console.log(error);
+    }
 });
 
 app.get('/content/', async function (req, res) {
