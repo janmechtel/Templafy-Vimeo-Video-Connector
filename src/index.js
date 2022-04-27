@@ -24,20 +24,21 @@ app.post('/oauth/token', function (req, res) {
     res.send(response);
 });
 
-app.get('/download', function (req, res) {
+app.get('/download/:videoUrl', function (req, res) {
 
-    // use the videoUrl parameter from the request
-    // const videoUrl = req.query.videoUrl;
+    //TODO: clean out the video files
+    //TODO: update the preview picture image1.jpeg by accepting a second parameter = the previewUrl
+    
+    const videoUrl = req.params.videoUrl;
     
     var originalFolder = './assets/Video2';
     var sourceFolder = './assets/Video2-copy-' + new Date().getTime();
     copyFolder(originalFolder, sourceFolder);
-    
+    console.log(videoUrl)
     replaceStringInFile(
         resolve(sourceFolder, 'ppt/slides/_rels/slide1.xml.rels'),
         'Target="https://player.vimeo.com/video/651772687?h=71334ad1a6&amp;app_id=122963"',
-        'Target="https://player.vimeo.com/video/651772687?h=71334ad1a6&amp;app_id=122963"',
-        // 'Target="https://player.vimeo.com/video/696472656?h=5ec3756bb5&amp;app_id=122963"',
+        'Target="' + videoUrl + '"',
         );
 
     var pptxFile = `./download-${new Date().getTime()}.pptx`;
@@ -68,8 +69,8 @@ app.get('/download', function (req, res) {
     // res.end();
 });
 
-app.get('/content/:contentId/download-url', function (req, res) {
-    const url = { downloadUrl: req.protocol + '://' + req.get('host') + `/download` };
+app.get('/content/:videoUrl/download-url', function (req, res) {
+    const url = { downloadUrl: req.protocol + '://' + req.get('host') + `/download/${encodeURIComponent(req.params.videoUrl)}` };
     res.send(url);
 });
 
@@ -116,7 +117,7 @@ app.get('/content/', async function (req, res) {
                 body.data.forEach(function(video) {
                     console.log(video);
                     response.content.push({
-                        id: video.player_embed_url,
+                        id: encodeURIComponent(video.player_embed_url),
                         mimeType: "application/vnd.openxmlformats-officedocument.presentationml.presentation",
                         previewUrl: video.pictures.base_link, 
                         // `https://i.vimeocdn.com/video/1410789380-ce6e905b04fe6a6aabc9bf2a136bac550b869af6a336fe5f10d9818256992742-d?mw=1200&mh=675&q=70`,
@@ -167,9 +168,7 @@ async function createZipFile(sourceFolder, outputFile) {
         }
     });
     /** create zip file */
-    fs.writeFile(outputFile, zipContent,function(err, result) {
-        if(err) console.log('error', err);
-    });
+    return fs.writeFileSync(outputFile, zipContent);
 }
 
 // returns a flat array of absolute paths of all files recursively contained in the dir
