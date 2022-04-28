@@ -24,13 +24,19 @@ app.post('/oauth/token', function (req, res) {
     res.send(response);
 });
 
-app.get('/download/:videoUrl', function (req, res) {
+app.get('/download/*', function (req, res) {
 
     //TODO: clean out the video files
     //TODO: update the preview picture image1.jpeg by accepting a second parameter = the previewUrl
-    
-    const videoUrl = req.params.videoUrl;
-    
+
+    //working with the original url because of a bug in the azure load balancer, 
+    // which seems to unescape the url before it reaches the express router
+    // https://github.com/Azure/iisnode/issues/104
+    // https://github.com/tjanczuk/iisnode/issues/217
+
+    // remove '/download-url' from the url
+    const videoUrl = req.originalUrl.replace('/download/','');
+        
     var originalFolder = './assets/Video2';
     var sourceFolder = './assets/Video2-copy-' + new Date().getTime();
     copyFolder(originalFolder, sourceFolder);
