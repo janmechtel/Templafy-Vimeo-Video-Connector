@@ -152,7 +152,7 @@ app.get('/content/*', function (req, res) {
         // remove '/download-url' from the url
         var videoUrl = req.originalUrl.replace('/content/','').replace('/download-url', '');
         console.log(videoUrl);
-        const url = { downloadUrl: req.protocol + '://' + req.get('host') + `/download/${encodeURIComponent(videoUrl)}` };
+        const url = { downloadUrl:  'https://' + req.get('host') + `/download/${encodeURIComponent(videoUrl)}` };
         res.send(url);
     } catch (error) {
         console.log(error);
