@@ -45,7 +45,7 @@ app.get('/download/*', function (req, res) {
     replaceStringInFile(
         resolve(sourceFolder, 'ppt/slides/_rels/slide1.xml.rels'),
         'Target="https://player.vimeo.com/video/651772687?h=71334ad1a6&amp;app_id=122963"',
-        'Target="' + videoUrl + '&amp;app_id=122963"',
+        'Target="https://' + videoUrl + '&amp;app_id=122963"',
         );
 
     var pptxFile = `./download-${new Date().getTime()}.pptx`;
@@ -119,7 +119,7 @@ app.get('/content/', async function (req, res) {
                 body.data.forEach(function(video) {
                     console.log(video);
                     response.content.push({
-                        id: encodeURIComponent(video.player_embed_url),
+                        id: encodeURIComponent(video.player_embed_url.replace('https://','')),
                         mimeType: "application/vnd.openxmlformats-officedocument.presentationml.presentation",
                         previewUrl: video.pictures.base_link, 
                         // `https://i.vimeocdn.com/video/1410789380-ce6e905b04fe6a6aabc9bf2a136bac550b869af6a336fe5f10d9818256992742-d?mw=1200&mh=675&q=70`,
@@ -149,7 +149,7 @@ app.get('/content/*', function (req, res) {
 
         // remove '/download-url' from the url
         console.log(req.originalUrl);
-        var videoUrl = decodeURIComponent(req.originalUrl.replace('/content/','').replace('/download-url', ''));
+        var videoUrl = decodeURIComponent(req.originalUrl).replace('/content/','').replace('/download-url', '');
         console.log(videoUrl);
         const body = { downloadUrl:  'https://' + req.get('host') + `/download/${encodeURIComponent(videoUrl)}` };
         res.send(body);
