@@ -34,13 +34,14 @@ app.get('/download/*', function (req, res) {
     // https://github.com/Azure/iisnode/issues/104
     // https://github.com/tjanczuk/iisnode/issues/217
 
-    // remove '/download-url' from the url
-    const videoUrl = decodeURIComponent(req.originalUrl.replace('/download/',''));
+    // remove '/download/' from the url
+    console.log(req.originalUrl);
+    const videoUrl = decodeURIComponent(req.originalUrl).replace('/download/','');
+    console.log(videoUrl);
     
     var originalFolder = './assets/Video2';
     var sourceFolder = './assets/Video2-copy-' + new Date().getTime();
     copyFolder(originalFolder, sourceFolder);
-    console.log(videoUrl);
     replaceStringInFile(
         resolve(sourceFolder, 'ppt/slides/_rels/slide1.xml.rels'),
         'Target="https://player.vimeo.com/video/651772687?h=71334ad1a6&amp;app_id=122963"',
@@ -147,9 +148,12 @@ app.get('/content/*', function (req, res) {
         // https://github.com/tjanczuk/iisnode/issues/217
 
         // remove '/download-url' from the url
-        var videoUrl = req.originalUrl.replace('/content/','').replace('/download-url', '');
-        const url = { downloadUrl:  'https://' + req.get('host') + `/download/${videoUrl}` };
-        res.send(url);
+        console.log(req.originalUrl);
+        var videoUrl = decodeURIComponent(req.originalUrl.replace('/content/','').replace('/download-url', ''));
+        console.log(videoUrl);
+        const body = { downloadUrl:  'https://' + req.get('host') + `/download/${encodeURIComponent(videoUrl)}` };
+        res.send(body);
+        console.log(body);
     } catch (error) {
         console.log(error);
     }
